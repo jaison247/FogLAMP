@@ -131,7 +131,6 @@ PACKAGE_NAME=FogLAMP
 default : apply_version \
 	generate_selfcertificate \
 	c_build $(SYMLINK_STORAGE_BINARY) $(SYMLINK_SOUTH_BINARY) $(SYMLINK_NORTH_BINARY) $(SYMLINK_PLUGINS_DIR) \
-	sqlite3_command_line \
 	python_build python_requirements_user
 
 apply_version :
@@ -180,11 +179,6 @@ schema_check : apply_version
 	$(if $(SCHEMA_CHANGE_ERROR),$(error FogLAMP DB schema cannot be performed as pre-install task: $(SCHEMA_CHANGE_ERROR)),)
 	$(if $(SCHEMA_CHANGE_WARNING),$(warning $(SCHEMA_CHANGE_WARNING)),$(info -- FogLAMP DB schema check OK: $(SCHEMA_CHANGE_OUTPUT)))
 
-# Local copy of sqlite3 command line tool if needed
-sqlite3_command_line :
-# Copy the cmd line tool into sqlite plugin dir
-	$(if $(FOGLAMP_HAS_SQLITE3), $(CP) $(FOGLAMP_HAS_SQLITE3)/sqlite3 $(SYMLINK_PLUGINS_DIR)/storage/sqlite/)
-
 #
 # install
 # Creates a deployment structure in the default destination, /usr/local/foglamp
@@ -217,16 +211,18 @@ generate_selfcertificate:
 # run make execute makefiles producer by cmake
 c_build : $(CMAKE_GEN_MAKEFILE)
 	$(CD) $(CMAKE_BUILD_DIR) ; $(MAKE)
+# Local copy of sqlite3 command line tool if needed
+# Copy the cmd line tool into sqlite plugin dir
+ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3_PATH))","")
+	$(info  SQLite3 package has been found in $(FOGLAMP_HAS_SQLITE3_PATH))
+	$(CP) $(FOGLAMP_HAS_SQLITE3_PATH)/sqlite3 $(SYMLINK_PLUGINS_DIR)/storage/sqlite/
+endif
 
 # run cmake to generate makefiles
 # always rerun cmake because:
 #   parent CMakeLists.txt may have changed
 #   CMakeLists.txt files in subdirectories may have changed
 $(CMAKE_GEN_MAKEFILE) : $(CMAKE_FILE) $(CMAKE_BUILD_DIR)
-ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3_PATH))","")
-	$(eval FOGLAMP_HAS_SQLITE3=$(FOGLAMP_HAS_SQLITE3_PATH))
-	$(info  SQLite3 package has been found in $(FOGLAMP_HAS_SQLITE3))
-endif
 	$(CD) $(CMAKE_BUILD_DIR) ; $(CMAKE) $(CURRENT_DIR)
 
 # create build dir
