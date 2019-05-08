@@ -1,6 +1,11 @@
 ###############################################################################
 ################################### COMMANDS ##################################
 ###############################################################################
+# Check RedHat || CentOS
+$(eval PLATFORM_RH=$(shell (lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om) | egrep '(Red Hat|CentOS)'))
+# Log Platform RedHat || CentOS
+$(if $(PLATFORM_RH), $(info Platform is $(PLATFORM_RH)))
+
 MKDIR_PATH := mkdir -p
 CD := cd
 LN := ln -sf
@@ -99,14 +104,17 @@ CERTIFICATES_SCRIPT_SRC     := scripts/certificates
 AUTH_CERTIFICATES_SCRIPT_SRC := scripts/auth_certificates
 PACKAGE_UPDATE_SCRIPT_SRC   := scripts/package
 
+# Custom location of SQLite3 library
+FOGLAMP_HAS_SQLITE3         := /tmp/foglamp-sqlite3-pkg/src
+
 # EXTRA SCRIPTS
 EXTRAS_SCRIPTS_SRC_DIR      := extras/scripts
 
 # FOGBENCH
-FOGBENCH_PYTHON_SRC_DIR    := extras/python/fogbench
+FOGBENCH_PYTHON_SRC_DIR     := extras/python/fogbench
 
 # FogLAMP Version file
-FOGLAMP_VERSION_FILE       := VERSION
+FOGLAMP_VERSION_FILE        := VERSION
 
 ###############################################################################
 ################################### OTHER VARS ################################
@@ -123,6 +131,7 @@ PACKAGE_NAME=FogLAMP
 default : apply_version \
 	generate_selfcertificate \
 	c_build $(SYMLINK_STORAGE_BINARY) $(SYMLINK_SOUTH_BINARY) $(SYMLINK_NORTH_BINARY) $(SYMLINK_PLUGINS_DIR) \
+	sqlite3_command_line \
 	python_build python_requirements_user
 
 apply_version :
@@ -171,6 +180,12 @@ schema_check : apply_version
 	$(if $(SCHEMA_CHANGE_ERROR),$(error FogLAMP DB schema cannot be performed as pre-install task: $(SCHEMA_CHANGE_ERROR)),)
 	$(if $(SCHEMA_CHANGE_WARNING),$(warning $(SCHEMA_CHANGE_WARNING)),$(info -- FogLAMP DB schema check OK: $(SCHEMA_CHANGE_OUTPUT)))
 
+# Local copy of sqlite3 command line tool if needed
+sqlite3_command_line :
+# Copy the cmd line tool into sqlite plugin dir
+	$(if $(FOGLAMP_HAS_SQLITE3), $(CP) $(FOGLAMP_HAS_SQLITE3)/sqlite3 $(SYMLINK_PLUGINS_DIR)/storage/sqlite/)
+
+#
 # install
 # Creates a deployment structure in the default destination, /usr/local/foglamp
 # Destination may be overridden by use of the DESTDIR=<location> directive
@@ -208,6 +223,10 @@ c_build : $(CMAKE_GEN_MAKEFILE)
 #   parent CMakeLists.txt may have changed
 #   CMakeLists.txt files in subdirectories may have changed
 $(CMAKE_GEN_MAKEFILE) : $(CMAKE_FILE) $(CMAKE_BUILD_DIR)
+ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3))","")
+	$(eval FOGLAMP_HAS_SQLITE3=$(FOGLAMP_HAS_SQLITE3))
+	$(info  SQLite3 package has been found in $(FOGLAMP_HAS_SQLITE3))
+endif
 	$(CD) $(CMAKE_BUILD_DIR) ; $(CMAKE) $(CURRENT_DIR)
 
 # create build dir
