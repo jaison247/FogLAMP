@@ -69,7 +69,7 @@ if ! [[ -x "$(command -v sqlite3)" ]]; then
     sqlite_log "info" "If SQLite3 is installed, check if the bin dir is in the PATH." "outonly" "pretty"
     exit 1
 else
-    SQLITE_SQL="$(command -v sqlite3)"
+    SQLITE_SQL="$FOGLAMP_ROOT/plugins/storage/sqlite/sqlite3"
 fi
 
 ## SQLite3 Start
