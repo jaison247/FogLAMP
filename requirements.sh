@@ -24,26 +24,25 @@
 set -e
 
 foglamp_location=`pwd`
-op=$(lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om)
-echo $op | egrep -q '(Red Hat|CentOS)'
-if [ "$op" != "" ]; then
+is_rhel=`(lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om) | egrep '(Red Hat|CentOS)' || echo ""`
+if [ "${is_rhel}" != "" ]; then
 	echo "Platform is $op"
-	yum check-update
-	yum update -y
-	yum-config-manager --enable 'Red Hat Enterprise Linux Server 7 RHSCL (RPMs)'
-	yum install -y @development
-	yum install -y boost-devel
-	yum install -y glib2-devel
-	yum install -y rh-python36
-	yum install -y rsyslog
-	yum install -y openssl-devel
-	yum install -y postgresql-devel
-	yum install -y wget
-	yum install -y zlib-devel
-	yum install -y git
-	yum install -y cmake
-	yum install -y libuuid-devel
-	yum install -y dbus-devel
+	sudo yum check-update
+	sudo yum update -y
+	sudo yum-config-manager --enable 'Red Hat Enterprise Linux Server 7 RHSCL (RPMs)'
+	sudo yum install -y @development
+	sudo yum install -y boost-devel
+	sudo yum install -y glib2-devel
+	sudo yum install -y rh-python36
+	sudo yum install -y rsyslog
+	sudo yum install -y openssl-devel
+	sudo yum install -y postgresql-devel
+	sudo yum install -y wget
+	sudo yum install -y zlib-devel
+	sudo yum install -y git
+	sudo yum install -y cmake
+	sudo yum install -y libuuid-devel
+	sudo yum install -y dbus-devel
 
 	sudo su - <<EOF
 scl enable rh-python36 bash
