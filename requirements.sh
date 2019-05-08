@@ -26,7 +26,7 @@ set -e
 foglamp_location=`pwd`
 is_rhel=`(lsb_release -ds 2>/dev/null || cat /etc/*release 2>/dev/null | head -n1 || uname -om) | egrep '(Red Hat|CentOS)' || echo ""`
 if [ "${is_rhel}" != "" ]; then
-	echo "Platform is $op"
+	echo "Platform is ${is_rhel}"
 	sudo yum check-update
 	sudo yum update -y
 	sudo yum-config-manager --enable 'Red Hat Enterprise Linux Server 7 RHSCL (RPMs)'
@@ -48,7 +48,7 @@ if [ "${is_rhel}" != "" ]; then
 scl enable rh-python36 bash
 pip install dbus-python
 EOF
-	service rsyslog start
+	sudo service rsyslog start
 
 # SQLite3 need to be compiled on CentOS|RHEL 
 	if [ -d /tmp/foglamp-sqlite3-pkg ]; then
