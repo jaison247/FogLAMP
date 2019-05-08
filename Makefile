@@ -105,7 +105,7 @@ AUTH_CERTIFICATES_SCRIPT_SRC := scripts/auth_certificates
 PACKAGE_UPDATE_SCRIPT_SRC   := scripts/package
 
 # Custom location of SQLite3 library
-FOGLAMP_HAS_SQLITE3         := /tmp/foglamp-sqlite3-pkg/src
+FOGLAMP_HAS_SQLITE3_PATH    := /tmp/foglamp-sqlite3-pkg/src
 
 # EXTRA SCRIPTS
 EXTRAS_SCRIPTS_SRC_DIR      := extras/scripts
@@ -223,8 +223,8 @@ c_build : $(CMAKE_GEN_MAKEFILE)
 #   parent CMakeLists.txt may have changed
 #   CMakeLists.txt files in subdirectories may have changed
 $(CMAKE_GEN_MAKEFILE) : $(CMAKE_FILE) $(CMAKE_BUILD_DIR)
-ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3))","")
-	$(eval FOGLAMP_HAS_SQLITE3=$(FOGLAMP_HAS_SQLITE3))
+ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3_PATH))","")
+	$(eval FOGLAMP_HAS_SQLITE3=$(FOGLAMP_HAS_SQLITE3_PATH))
 	$(info  SQLite3 package has been found in $(FOGLAMP_HAS_SQLITE3))
 endif
 	$(CD) $(CMAKE_BUILD_DIR) ; $(CMAKE) $(CURRENT_DIR)
