@@ -215,7 +215,7 @@ c_build : $(CMAKE_GEN_MAKEFILE)
 # Copy the cmd line tool into sqlite plugin dir
 ifneq ("$(wildcard $(FOGLAMP_HAS_SQLITE3_PATH))","")
 	$(info  SQLite3 package has been found in $(FOGLAMP_HAS_SQLITE3_PATH))
-	$(CP) $(FOGLAMP_HAS_SQLITE3_PATH)/sqlite3 $(SYMLINK_PLUGINS_DIR)/storage/sqlite/
+	$(CP) $(FOGLAMP_HAS_SQLITE3_PATH)/sqlite3 $(CMAKE_PLUGINS_DIR)/storage/sqlite/
 endif
 
 # run cmake to generate makefiles
