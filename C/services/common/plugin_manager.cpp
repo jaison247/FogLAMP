@@ -50,24 +50,25 @@ enum PLUGIN_TYPE {
  * Find a specific plugin in the directories listed in FOGLAMP_PLUGIN_PATH
  *
  * @param    name		The plugin name
- * @param    _plugin_path	value of FOGLAMP_PLUGIN_PATH environment variable
+ * @param    _type		The plugin type string
+ * @param    _plugin_path	Value of FOGLAMP_PLUGIN_PATH environment variable
  * @param    type		The plugin type
  * @return   string		The absolute path of plugin
  */
-string findPlugin(string name, string _plugin_path, PLUGIN_TYPE type)
+string findPlugin(string name, string _type, string _plugin_path, PLUGIN_TYPE type)
 {
 	if (type != BINARY_PLUGIN && type != PYTHON_PLUGIN)
 		return "";
 	
-	stringstream plugin_path(_plugin_path); 
+	stringstream plugin_path(_plugin_path);
       
-    string temp; 
+    string temp;
       
-    // Tokenizing w.r.t. space ' ' 
+    // Tokenizing w.r.t. semicolon ';' 
     while(getline(plugin_path, temp, ';')) 
     {
-		Logger::getLogger()->info("Trying path: %s", temp.c_str());
-		string path = temp+"/"+name+"/";
+		//Logger::getLogger()->debug("Trying path: %s", temp.c_str());
+		string path = temp+"/"+_type+"/"+name+"/";
 		switch(type)
 		{
 			case BINARY_PLUGIN:
@@ -82,8 +83,8 @@ string findPlugin(string name, string _plugin_path, PLUGIN_TYPE type)
 			Logger::getLogger()->info("Found plugin @ %s", path.c_str());
 			return path;
 		}
-		else
-			Logger::getLogger()->info("Couldn't find plugin @ %s", path.c_str());
+		//else
+			//Logger::getLogger()->info("Couldn't find plugin @ %s", path.c_str());
     }
 	return "";
 }
@@ -113,7 +114,7 @@ char          buf[128];
 
   char *home = getenv("FOGLAMP_ROOT");
   char *plugin_path = getenv("FOGLAMP_PLUGIN_PATH");
-  logger->debug("name=%s, type=%s, home=%s, plugin_path=%s", name.c_str(), type.c_str(), home, plugin_path);
+  logger->debug("name=%s, type=%s, home=%s, plugin_path=%s", name.c_str(), type.c_str(), home, plugin_path?plugin_path:"NOT SET");
   
   /*
    * Find and try to load the dynamic library that is the plugin
@@ -128,18 +129,16 @@ char          buf[128];
 	         type.c_str(),
 	         name.c_str(),
 	         name.c_str());
-	PRINT_FUNC;
 	if (access(buf, F_OK) != 0 && plugin_path)
 	{
-		PRINT_FUNC;
-		string path = findPlugin(name, string(plugin_path), BINARY_PLUGIN);
-		if(path.compare("")==0)
+		string path = findPlugin(name, type, string(plugin_path), BINARY_PLUGIN);
+		if(path.compare("") != 0)
 		{
 			PRINT_FUNC;
 			strncpy(buf, path.c_str(), sizeof(buf));
 		}
 	}
-	PRINT_FUNC;
+	logger->debug("buf=%s, access(buf, F_OK|R_OK)=%d", buf, access(buf, F_OK|R_OK));
   }
   if (access(buf, F_OK|R_OK) == 0)
   {
@@ -198,11 +197,11 @@ char          buf[128];
 
   if (access(buf, F_OK) != 0 && plugin_path)
   {
-	  string path = findPlugin(name, string(plugin_path), PYTHON_PLUGIN);
-	  if(path.compare("")==0)
+	  string path = findPlugin(name, type, string(plugin_path), PYTHON_PLUGIN);
+	  if(path.compare("")!=0)
 		  strncpy(buf, path.c_str(), sizeof(buf));
   }
-    
+  
   if (access(buf, F_OK|R_OK) == 0)
   {
 	pluginHandle = new PythonPluginHandle(name.c_str(), buf);
